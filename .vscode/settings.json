@@ -51,5 +51,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "AR_SAMPLE.sln"
+    "dotnet.defaultSolution": "ar_ruler.sln"
 }
