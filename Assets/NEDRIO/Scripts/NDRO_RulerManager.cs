@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 using TMPro;
-
+using UnityEngine.UI;
 
 namespace NDRO.Ruler
 {
@@ -16,20 +16,42 @@ namespace NDRO.Ruler
         public TextMeshProUGUI txtUserDisance;
         public Transform trRulerPool;
         private float lastDistance = -1;
+        public MeshRenderer mrPivitCenter;
+        public MeshRenderer mrPivitEdge;
+        public Button btnAddRulerPoint;
+
+        Vector3 rulerPosSave;
+        public NDRO_RulerPoints prefabRulerPoint;
+        public NDRO_RulerPoints curRulerPoint;
+        List<NDRO_RulerPoints> rulerPointPoolList = new List<NDRO_RulerPoints>();
+
+        public GameObject mainCam;
+
+        bool isSurfaceDetected = false;
 
         void Start()
         {
             scrCenterVec = new Vector2(Screen.width / 2, Screen.height / 2);
+            SetBtnEvent();
         }
 
+        void SetBtnEvent()
+        {
+            btnAddRulerPoint.onClick.AddListener(MakeRulerPoint);
+        }
 
         // Update is called once per frame
         void Update()
         {
+            isSurfaceDetected = rayManager.Raycast(scrCenterVec, hits, TrackableType.PlaneWithinPolygon);
 
-            if (rayManager.Raycast(scrCenterVec, hits, TrackableType.PlaneWithinPolygon))
+            UpdateAlpha(isSurfaceDetected);
+
+            if (isSurfaceDetected)
             {
+
                 UpdateDistance();
+                rulerPosSave = hits[0].pose.position;
             }
             else
             {
@@ -57,6 +79,12 @@ namespace NDRO.Ruler
                 closestDistance = ConvertToCentimeters(closestDistance);
                 txtUserDisance.text = closestDistance.ToString("N2") + " cm";
 
+                if (curRulerPoint != null)
+                {
+                    curRulerPoint.SetObj(rulerPosSave);
+                }
+
+
                 // 크기 조정 로직 추가
                 AdjustScaleBasedOnDistance(closestDistance);
             }
@@ -78,8 +106,43 @@ namespace NDRO.Ruler
             // 스케일 적용
             trPivitObj.localScale = new Vector3(scale, scale, scale);
         }
-    }
 
+
+        void UpdateAlpha(bool isSurfaceDetected)
+        {
+            var mat = mrPivitCenter.material;
+            float targetAlpha = isSurfaceDetected ? 1.0f : 0.0f; // 찾았을 때 불투명, 못 찾았을 때 투명
+            float currentAlpha = mat.GetFloat("_Alpha");
+            float newAlpha = Mathf.Lerp(currentAlpha, targetAlpha, Time.deltaTime * 1.5f); // 부드러운 전환
+            mrPivitCenter.material.SetFloat("_Alpha", newAlpha);
+            mrPivitEdge.material.SetFloat("_Alpha", newAlpha);
+        }
+
+
+
+        void MakeRulerPoint()
+        {
+            if (isSurfaceDetected)
+            {
+
+                NDRO_RulerPoints tObj = Instantiate(prefabRulerPoint, trRulerPool);
+                tObj.transform.position = Vector3.zero;
+                tObj.transform.localScale = Vector3.one;
+
+                tObj.SetInits(rulerPosSave);
+                tObj.SetMainCam(mainCam);
+                rulerPointPoolList.Add(tObj);
+                curRulerPoint = tObj;
+
+            }
+            else
+            {
+                curRulerPoint = null;
+            }
+        }
+
+
+    }
 
 }
 
