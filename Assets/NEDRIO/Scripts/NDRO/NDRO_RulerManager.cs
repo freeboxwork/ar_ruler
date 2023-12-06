@@ -63,30 +63,26 @@ namespace NDRO.Ruler
                 isFirstRulerPoint = hit.transform.tag == "firstRulerPoint";
                 if (isFirstRulerPoint)
                 {
-                    //rulerPosSave = hit.point;
-
-                    // world position to 2d position
+                    // World position to 2D position
                     Vector3 screenPos = cam.WorldToScreenPoint(rulerPointPoolList[0].pointA.position);
                     closePointUI.rectTransform.anchoredPosition = screenPos;
 
-                    // UI TO 3D POSITION
-                    //Vector3 worldPos = cam.ScreenToWorldPoint(closePointUI.rectTransform.anchoredPosition);
+                    // UI to 3D position
                     Vector3 screenPoint = closePointUI.rectTransform.position;
-                    screenPoint.z = cam.nearClipPlane;
-
+                    screenPoint.z = cam.nearClipPlane + 0.13f; // Set the depth to the near clip plane
                     Vector3 worldPoint = cam.ScreenToWorldPoint(screenPoint);
-                    trPivotCenter.transform.position = worldPoint;
 
+                    // Smoothly interpolate the trPivotCenter position to the worldPoint
+                    trPivotCenter.transform.position = Vector3.Lerp(trPivotCenter.transform.position, worldPoint, Time.deltaTime * 20f); // Adjust the 10f speed as needed
                 }
                 else
                 {
-                    trPivotCenter.transform.localPosition = Vector3.zero;
+                    ResetPivotCenterPosition();
                 }
             }
             else
             {
-                trPivotCenter.transform.localPosition = Vector3.zero;
-                isFirstRulerPoint = false;
+                ResetPivotCenterPosition();
             }
 
 
@@ -102,6 +98,14 @@ namespace NDRO.Ruler
             {
                 txtUserDisance.text = "Please point at a surface";
             }
+        }
+
+
+        void ResetPivotCenterPosition()
+        {
+            // Smoothly interpolate back to the starting position
+            trPivotCenter.transform.localPosition = Vector3.Lerp(trPivotCenter.transform.localPosition, Vector3.zero, Time.deltaTime * 15f); // Adjust the 10f speed as needed
+            isFirstRulerPoint = false;
         }
 
 
@@ -192,7 +196,19 @@ namespace NDRO.Ruler
                 tObj.SetInits(rulerPosSave);
                 tObj.SetMainCam(mainCam);
                 rulerPointPoolList.Add(tObj);
-                curRulerPoint = tObj;
+
+
+                if (isFirstRulerPoint)
+                {
+                    curRulerPoint = null;
+
+                    // complete
+
+                }
+                else
+                {
+                    curRulerPoint = tObj;
+                }
 
             }
             else

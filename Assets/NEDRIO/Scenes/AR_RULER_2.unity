@@ -1127,19 +1127,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rayManager: {fileID: 1631192983}
-  trPivitObj: {fileID: 78512210}
+  trPivitObj: {fileID: 0}
   trPivotCenter: {fileID: 1448737292}
-  txtUserDisance: {fileID: 164949728}
-  trRulerPool: {fileID: 1781905856}
-  mrPivitCenter: {fileID: 8652284829096426855}
-  mrPivitEdge: {fileID: 1448737294}
+  txtUserDisance: {fileID: 0}
+  trRulerPool: {fileID: 0}
+  mrPivitCenter: {fileID: 0}
+  mrPivitEdge: {fileID: 0}
   btnAddRulerPoint: {fileID: 445726328}
   prefabRulerPoint: {fileID: 3995085568301094668, guid: 3c6f3ecd1084dd24b913fe799d0e0403,
     type: 3}
   curRulerPoint: {fileID: 0}
   mainCam: {fileID: 1155966853}
   closePointUI: {fileID: 2089618008}
-  cam: {fileID: 1155966859}
+  cam: {fileID: 0}
 --- !u!1 &547829958
 GameObject:
   m_ObjectHideFlags: 0
@@ -8679,7 +8679,7 @@ GameObject:
   - component: {fileID: 2089618009}
   - component: {fileID: 2089618008}
   m_Layer: 5
-  m_Name: povitMagnet
+  m_Name: Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8717,8 +8717,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0, b: 0, a: 0}
-  m_RaycastTarget: 0
+  m_Color: {r: 1, g: 0, b: 0, a: 1}
+  m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
