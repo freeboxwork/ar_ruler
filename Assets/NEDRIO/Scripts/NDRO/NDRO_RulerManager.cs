@@ -9,13 +9,19 @@ namespace NDRO.Ruler
 {
     public class NDRO_RulerManager : MonoBehaviour
     {
+
+        RaycastHit hit;
         public ARRaycastManager rayManager;
         public List<ARRaycastHit> hits = new List<ARRaycastHit>();
         Vector2 scrCenterVec;
         public Transform trPivitObj;
+        public Transform trPivotCenter;
+
         public TextMeshProUGUI txtUserDisance;
         public Transform trRulerPool;
         private float lastDistance = -1;
+
+
         public MeshRenderer mrPivitCenter;
         public MeshRenderer mrPivitEdge;
         public Button btnAddRulerPoint;
@@ -28,6 +34,14 @@ namespace NDRO.Ruler
         public GameObject mainCam;
 
         bool isSurfaceDetected = false;
+
+        bool isFirstRulerPoint = false;
+
+
+        public Image closePointUI;
+        public Camera cam;
+
+
 
         void Start()
         {
@@ -43,10 +57,41 @@ namespace NDRO.Ruler
         // Update is called once per frame
         void Update()
         {
+
+            if (Physics.Raycast(mainCam.transform.position, mainCam.transform.forward, out hit))
+            {
+                isFirstRulerPoint = hit.transform.tag == "firstRulerPoint";
+                if (isFirstRulerPoint)
+                {
+                    //rulerPosSave = hit.point;
+
+                    // world position to 2d position
+                    Vector3 screenPos = cam.WorldToScreenPoint(rulerPointPoolList[0].pointA.position);
+                    closePointUI.rectTransform.anchoredPosition = screenPos;
+
+                    // UI TO 3D POSITION
+                    //Vector3 worldPos = cam.ScreenToWorldPoint(closePointUI.rectTransform.anchoredPosition);
+                    Vector3 screenPoint = closePointUI.rectTransform.position;
+                    screenPoint.z = cam.nearClipPlane;
+
+                    Vector3 worldPoint = cam.ScreenToWorldPoint(screenPoint);
+                    trPivotCenter.transform.position = worldPoint;
+
+                }
+                else
+                {
+                    trPivotCenter.transform.localPosition = Vector3.zero;
+                }
+            }
+            else
+            {
+                trPivotCenter.transform.localPosition = Vector3.zero;
+                isFirstRulerPoint = false;
+            }
+
+
             isSurfaceDetected = rayManager.Raycast(scrCenterVec, hits, TrackableType.PlaneWithinPolygon);
-
             UpdateAlpha(isSurfaceDetected);
-
             if (isSurfaceDetected)
             {
 
@@ -81,6 +126,10 @@ namespace NDRO.Ruler
 
                 if (curRulerPoint != null)
                 {
+                    if (isFirstRulerPoint)
+                    {
+                        rulerPosSave = rulerPointPoolList[0].pointA.position;
+                    }
                     curRulerPoint.SetObj(rulerPosSave);
                 }
 
@@ -128,6 +177,17 @@ namespace NDRO.Ruler
                 NDRO_RulerPoints tObj = Instantiate(prefabRulerPoint, trRulerPool);
                 tObj.transform.position = Vector3.zero;
                 tObj.transform.localScale = Vector3.one;
+
+                if (curRulerPoint != null)
+                {
+                    rulerPosSave = curRulerPoint.pointB.position;
+                }
+                else
+                {
+                    tObj.pointA.tag = "firstRulerPoint";
+
+                    Debug.Log("this!");
+                }
 
                 tObj.SetInits(rulerPosSave);
                 tObj.SetMainCam(mainCam);

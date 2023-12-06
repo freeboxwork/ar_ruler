@@ -37,8 +37,10 @@ namespace NDRO.Ruler
 
         public void SetInits(Vector3 position)
         {
+            transform.position = position;
             pointA.position = position;
             lineRenderer.SetPosition(0, position);
+            lineRenderer.SetPosition(1, position);
         }
 
         public void SetObj(Vector3 position)
