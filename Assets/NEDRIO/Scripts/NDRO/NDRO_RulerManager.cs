@@ -166,7 +166,7 @@ namespace NDRO.Ruler
             var mat = mrPivitCenter.material;
             float targetAlpha = isSurfaceDetected ? 1.0f : 0.0f; // 찾았을 때 불투명, 못 찾았을 때 투명
             float currentAlpha = mat.GetFloat("_Alpha");
-            float newAlpha = Mathf.Lerp(currentAlpha, targetAlpha, Time.deltaTime * 1.5f); // 부드러운 전환
+            float newAlpha = Mathf.Lerp(currentAlpha, targetAlpha, Time.deltaTime * 10f); // 부드러운 전환
             mrPivitCenter.material.SetFloat("_Alpha", newAlpha);
             mrPivitEdge.material.SetFloat("_Alpha", newAlpha);
         }
