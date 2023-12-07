@@ -35,6 +35,17 @@ namespace NDRO.Ruler
 
             string json = JsonUtility.ToJson(tapeRulerSaveData);
 
+            // JSON FILE SAVE
+
+            // 폴더가 없으면 생성
+            if (!System.IO.Directory.Exists(Application.persistentDataPath + "/TapeRulerData"))
+            {
+                System.IO.Directory.CreateDirectory(Application.persistentDataPath + "/TapeRulerData");
+            }
+            string path = Application.persistentDataPath + "/TapeRulerData/" + dataName + ".json";
+            System.IO.File.WriteAllText(path, json);
+            Debug.Log("저장 완료 : " + path);
+
             //TODO: 서버에 데이터 전송
         }
     }
