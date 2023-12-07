@@ -50,6 +50,13 @@ namespace NDRO.Ruler
         public string date;
         public string dataType = "TapeRuler";
         public string customorCode;
+
+        // 비고사항. 필요시 사용
+        public string note;
+
+        // 폴리곤 평면 형식 (  XY, YZ, XZ )
+        public string planeXYZtype;
+
     }
 
     [System.Serializable]

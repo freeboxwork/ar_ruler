@@ -41,6 +41,8 @@ namespace NDRO.Ruler
         public Camera cam;
 
         public NDRO_ARDataManager arDataManager;
+        public NDRO_PolygonMeshCreator polygonMeshCreator;
+
 
 
 
@@ -209,9 +211,19 @@ namespace NDRO.Ruler
                     // complete
 
                     // json model 저장 
-
                     rulerPointPoolList[0].pointA.tag = "Untagged";
                     arDataManager.SaveTapeRulerData(rulerPointPoolList, "test_customer", "test_customer_code");
+
+                    // mesh 생성
+                    polygonMeshCreator.InitMeshCreater(rulerPointPoolList);
+
+                    // mesh 정보 출력
+                    var vectors = NDRO_PolygonPlaneCalculator.GetVectorsByNDRO_RulerPoints(rulerPointPoolList);
+                    var info = NDRO_PolygonPlaneCalculator.CalculateDimensions(vectors);
+                    Debug.Log($"width: {info.width}, height: {info.height}, plane: {info.plane}");
+
+                    rulerPointPoolList.Clear();
+
 
                     return;
                 }

@@ -3,13 +3,23 @@ using UnityEngine;
 
 namespace NDRO.Ruler
 {
-    public class PolygonMeshCreator : MonoBehaviour
+    public class NDRO_PolygonMeshCreator : MonoBehaviour
     {
         public Color color;
 
         void Start()
         {
 
+        }
+
+        public void InitMeshCreater(List<NDRO_RulerPoints> rulerPoints)
+        {
+            List<Transform> points = new List<Transform>();
+            for (int i = 0; i < rulerPoints.Count; i++)
+            {
+                points.Add(rulerPoints[i].pointA);
+            }
+            CreateMesh(points);
         }
 
         public void CreateMesh(List<Transform> points)
