@@ -16,7 +16,6 @@ namespace NDRO.Ruler
         Vector2 scrCenterVec;
         public Transform trPivitObj;
         public Transform trPivotCenter;
-
         public TextMeshProUGUI txtUserDisance;
         public Transform trRulerPool;
         private float lastDistance = -1;
@@ -41,6 +40,8 @@ namespace NDRO.Ruler
         public Image closePointUI;
         public Camera cam;
 
+        public NDRO_ARDataManager arDataManager;
+
 
 
         void Start()
@@ -57,58 +58,79 @@ namespace NDRO.Ruler
         // Update is called once per frame
         void Update()
         {
+            RaycastFromCamera();
+            HandleSurfaceDetection();
+        }
 
+
+        void RaycastFromCamera()
+        {
             if (Physics.Raycast(mainCam.transform.position, mainCam.transform.forward, out hit))
             {
-                isFirstRulerPoint = hit.transform.tag == "firstRulerPoint";
-                if (isFirstRulerPoint)
-                {
-                    // World position to 2D position
-                    Vector3 screenPos = cam.WorldToScreenPoint(rulerPointPoolList[0].pointA.position);
-                    closePointUI.rectTransform.anchoredPosition = screenPos;
-
-                    // UI to 3D position
-                    Vector3 screenPoint = closePointUI.rectTransform.position;
-                    screenPoint.z = cam.nearClipPlane + 0.13f; // Set the depth to the near clip plane
-                    Vector3 worldPoint = cam.ScreenToWorldPoint(screenPoint);
-
-                    // Smoothly interpolate the trPivotCenter position to the worldPoint
-                    trPivotCenter.transform.position = Vector3.Lerp(trPivotCenter.transform.position, worldPoint, Time.deltaTime * 20f); // Adjust the 10f speed as needed
-                }
-                else
-                {
-                    ResetPivotCenterPosition();
-                }
+                isFirstRulerPoint = hit.transform.CompareTag("firstRulerPoint");
+                // path close
+                HandleFirstRulerPoint();
             }
             else
             {
                 ResetPivotCenterPosition();
             }
-
-
-            isSurfaceDetected = rayManager.Raycast(scrCenterVec, hits, TrackableType.PlaneWithinPolygon);
-            UpdateAlpha(isSurfaceDetected);
-            if (isSurfaceDetected)
-            {
-
-                UpdateDistance();
-                rulerPosSave = hits[0].pose.position;
-            }
-            else
-            {
-                txtUserDisance.text = "Please point at a surface";
-            }
         }
 
+        void HandleFirstRulerPoint()
+        {
+            if (!isFirstRulerPoint)
+            {
+                ResetPivotCenterPosition();
+                return;
+            }
+
+            // World position to 2D position
+            Vector3 screenPos = cam.WorldToScreenPoint(rulerPointPoolList[0].pointA.position);
+            closePointUI.rectTransform.anchoredPosition = screenPos;
+
+            // UI to 3D position
+            Vector3 screenPoint = closePointUI.rectTransform.position;
+            screenPoint.z = cam.nearClipPlane + 0.13f; // Adjust depth as needed
+            Vector3 worldPoint = cam.ScreenToWorldPoint(screenPoint);
+
+            // Smoothly interpolate the trPivotCenter position to the worldPoint
+            trPivotCenter.transform.position = Vector3.Lerp(trPivotCenter.transform.position, worldPoint, Time.deltaTime * 20f);
+        }
 
         void ResetPivotCenterPosition()
         {
             // Smoothly interpolate back to the starting position
-            trPivotCenter.transform.localPosition = Vector3.Lerp(trPivotCenter.transform.localPosition, Vector3.zero, Time.deltaTime * 15f); // Adjust the 10f speed as needed
+            trPivotCenter.transform.localPosition = Vector3.Lerp(trPivotCenter.transform.localPosition, Vector3.zero, Time.deltaTime * 15f);
             isFirstRulerPoint = false;
         }
 
 
+
+
+        void HandleSurfaceDetection()
+        {
+            isSurfaceDetected = rayManager.Raycast(scrCenterVec, hits, TrackableType.PlaneWithinPolygon);
+            UpdateAlpha(isSurfaceDetected);
+
+            if (!isSurfaceDetected)
+            {
+                txtUserDisance.text = "Please point at a surface";
+                return;
+            }
+
+            UpdateDistance();
+            rulerPosSave = hits[0].pose.position;
+        }
+
+
+
+
+
+
+
+
+        // 유저가 표면을 찾았을 때 거리 측정 및 업데이트
         void UpdateDistance()
         {
             float closestDistance = float.MaxValue;
@@ -142,6 +164,8 @@ namespace NDRO.Ruler
                 AdjustScaleBasedOnDistance(closestDistance);
             }
         }
+
+
 
         float ConvertToCentimeters(float meters)
         {
@@ -178,6 +202,20 @@ namespace NDRO.Ruler
             if (isSurfaceDetected)
             {
 
+                if (isFirstRulerPoint)
+                {
+                    curRulerPoint = null;
+
+                    // complete
+
+                    // json model 저장 
+
+                    rulerPointPoolList[0].pointA.tag = "Untagged";
+                    arDataManager.SaveTapeRulerData(rulerPointPoolList, "test_customer", "test_customer_code");
+
+                    return;
+                }
+
                 NDRO_RulerPoints tObj = Instantiate(prefabRulerPoint, trRulerPool);
                 tObj.transform.position = Vector3.zero;
                 tObj.transform.localScale = Vector3.one;
@@ -189,8 +227,6 @@ namespace NDRO.Ruler
                 else
                 {
                     tObj.pointA.tag = "firstRulerPoint";
-
-                    Debug.Log("this!");
                 }
 
                 tObj.SetInits(rulerPosSave);
@@ -198,23 +234,15 @@ namespace NDRO.Ruler
                 rulerPointPoolList.Add(tObj);
 
 
-                if (isFirstRulerPoint)
-                {
-                    curRulerPoint = null;
 
-                    // complete
 
-                }
-                else
-                {
-                    curRulerPoint = tObj;
-                }
+                curRulerPoint = tObj;
 
             }
-            else
-            {
-                curRulerPoint = null;
-            }
+            // else
+            // {
+            //     curRulerPoint = null;
+            // }
         }
 
 

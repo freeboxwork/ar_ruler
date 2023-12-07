@@ -13,6 +13,8 @@ namespace NDRO.Ruler
         public Transform textPosition;
         public TextMeshPro textValue;
         public Transform mainCamera;
+        public float distance;
+
 
         void Start()
         {
@@ -26,8 +28,8 @@ namespace NDRO.Ruler
             textPosition.position = pointA.position + distanceVector * 0.5f;
 
             // 거리를 센티미터로 계산 및 텍스트 업데이트
-            float distanceInCentimeters = distanceVector.magnitude * 100f; // 미터를 센티미터로 변환
-            textValue.text = $"{distanceInCentimeters:N2}cm"; // cm 단위로 표시
+            distance = distanceVector.magnitude * 100f; // 미터를 센티미터로 변환
+            textValue.text = $"{distance:N2}cm"; // cm 단위로 표시
 
             // 카메라를 바라보도록 설정
             if (mainCamera != null)
