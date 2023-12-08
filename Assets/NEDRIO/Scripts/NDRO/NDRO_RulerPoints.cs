@@ -2,7 +2,6 @@ using UnityEngine;
 using TMPro;
 namespace NDRO.Ruler
 {
-
     public class NDRO_RulerPoints : MonoBehaviour
     {
 
@@ -12,8 +11,10 @@ namespace NDRO.Ruler
 
         public Transform textPosition;
         public TextMeshPro textValue;
-        public Transform mainCamera;
+        public Camera mainCamera;
         public float distance;
+
+        public NDRO_RulerPointUI rulerPointUI;
 
 
         void Start()
@@ -33,9 +34,41 @@ namespace NDRO.Ruler
 
             // 카메라를 바라보도록 설정
             if (mainCamera != null)
-                textPosition.LookAt(mainCamera);
+                textPosition.LookAt(mainCamera.transform);
 
+            // set ui position
+            if (rulerPointUI != null)
+            {
+                Vector3 viewPointA = mainCamera.WorldToViewportPoint(pointA.position);
+                Vector3 viewPointB = mainCamera.WorldToViewportPoint(pointB.position);
+
+                // 카메라가 오브젝트를 정면에서 바라보고 있을 때만 UI 위치 업데이트
+                if (viewPointA.z > 0 && viewPointB.z > 0)
+                {
+                    var scrPointA = GetScreenPosition(pointA);
+                    var scrPointB = GetScreenPosition(pointB);
+                    rulerPointUI.SetPosition(scrPointA, scrPointB);
+                }
+                else
+                {
+                    // UI 요소를 화면 밖으로 이동하여 숨깁니다.
+                    rulerPointUI.SetPosition(new Vector3(-1000, -1000, 0), new Vector3(-1000, -1000, 0));
+                }
+            }
         }
+
+        // get world position to screen position
+        public Vector3 GetScreenPosition(Transform target)
+        {
+            Vector3 screenPosition = mainCamera.WorldToScreenPoint(target.position);
+            // 화면 밖으로 표시되지 않도록 Z 좌표 조정
+            if (screenPosition.z < 0)
+            {
+                screenPosition = new Vector3(-1000, -1000, 0);
+            }
+            return screenPosition;
+        }
+
 
         public void SetInits(Vector3 position)
         {
@@ -51,9 +84,9 @@ namespace NDRO.Ruler
             lineRenderer.SetPosition(1, position);
         }
 
-        public void SetMainCam(GameObject cam)
+        public void SetMainCam(Camera cam)
         {
-            mainCamera = cam.transform;
+            mainCamera = cam;
         }
     }
 

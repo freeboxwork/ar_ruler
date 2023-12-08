@@ -10,38 +10,47 @@ namespace NDRO.Ruler
     public class NDRO_RulerManager : MonoBehaviour
     {
 
-        RaycastHit hit;
         public ARRaycastManager rayManager;
-        public List<ARRaycastHit> hits = new List<ARRaycastHit>();
-        Vector2 scrCenterVec;
-        public Transform trPivitObj;
-        public Transform trPivotCenter;
-        public TextMeshProUGUI txtUserDisance;
-        public Transform trRulerPool;
-        private float lastDistance = -1;
-
-
-        public MeshRenderer mrPivitCenter;
-        public MeshRenderer mrPivitEdge;
-        public Button btnAddRulerPoint;
-
-        Vector3 rulerPosSave;
-        public NDRO_RulerPoints prefabRulerPoint;
-        public NDRO_RulerPoints curRulerPoint;
-        List<NDRO_RulerPoints> rulerPointPoolList = new List<NDRO_RulerPoints>();
-
-        public GameObject mainCam;
-
-        bool isSurfaceDetected = false;
-
-        bool isFirstRulerPoint = false;
-
-
-        public Image closePointUI;
         public Camera cam;
 
+        [Header("UI Components")]
+        public TextMeshProUGUI txtUserDisance;
+        public Image closePointUI;
+        public Button btnAddRulerPoint;
+
+        [Header("Mesh Renderers")]
+        public MeshRenderer mrPivitCenter;
+        public MeshRenderer mrPivitEdge;
+
+        [Header("Transforms")]
+        public Transform trPivitObj;
+        public Transform trPivotCenter;
+        public Transform trRulerPool;
+        public Transform trRulerPointUIPool;
+
+
+        [Header("Prefab References")]
+        public NDRO_RulerPoints prefabRulerPoint;
+        public NDRO_RulerPointUI prefabRulerPointUI;
+
+        [Header("Data Managers")]
         public NDRO_ARDataManager arDataManager;
         public NDRO_PolygonMeshCreator polygonMeshCreator;
+
+        [Header("Ruler Points Management")]
+        public NDRO_RulerPoints curRulerPoint;
+        private List<NDRO_RulerPoints> rulerPointPoolList = new List<NDRO_RulerPoints>();
+
+        // State Variables
+        private RaycastHit hit;
+        private List<ARRaycastHit> hits = new List<ARRaycastHit>();
+        private Vector3 rulerPosSave;
+        private float lastDistance = -1;
+        private Vector2 scrCenterVec;
+
+        // Flags
+        private bool isSurfaceDetected = false;
+        private bool isFirstRulerPoint = false;
 
 
 
@@ -67,7 +76,7 @@ namespace NDRO.Ruler
 
         void RaycastFromCamera()
         {
-            if (Physics.Raycast(mainCam.transform.position, mainCam.transform.forward, out hit))
+            if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit))
             {
                 isFirstRulerPoint = hit.transform.CompareTag("firstRulerPoint");
                 // path close
@@ -124,11 +133,6 @@ namespace NDRO.Ruler
             UpdateDistance();
             rulerPosSave = hits[0].pose.position;
         }
-
-
-
-
-
 
 
 
@@ -206,9 +210,15 @@ namespace NDRO.Ruler
 
                 if (isFirstRulerPoint)
                 {
-                    curRulerPoint = null;
+
+                    if (rulerPointPoolList.Count < 3)
+                    {
+                        Debug.Log("최소 2개 이상의 선분이 필요합니다.");
+                        return;
+                    }
 
                     // complete
+                    curRulerPoint = null;
 
                     // json model 저장 
                     rulerPointPoolList[0].pointA.tag = "Untagged";
@@ -224,13 +234,16 @@ namespace NDRO.Ruler
 
                     rulerPointPoolList.Clear();
 
-
+                    // 측정 완료
                     return;
                 }
+
+                var rulerPointUI = Instantiate(prefabRulerPointUI, trRulerPointUIPool);
 
                 NDRO_RulerPoints tObj = Instantiate(prefabRulerPoint, trRulerPool);
                 tObj.transform.position = Vector3.zero;
                 tObj.transform.localScale = Vector3.one;
+                tObj.rulerPointUI = rulerPointUI;
 
                 if (curRulerPoint != null)
                 {
@@ -242,7 +255,7 @@ namespace NDRO.Ruler
                 }
 
                 tObj.SetInits(rulerPosSave);
-                tObj.SetMainCam(mainCam);
+                tObj.SetMainCam(cam);
                 rulerPointPoolList.Add(tObj);
 
 
