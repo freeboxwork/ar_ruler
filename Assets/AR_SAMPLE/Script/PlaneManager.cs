@@ -11,6 +11,7 @@ public class PlaneManager : MonoBehaviour
 
 
     }
+    
 
     void GetCurrentPlane()
     {

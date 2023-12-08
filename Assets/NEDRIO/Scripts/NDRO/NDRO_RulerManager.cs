@@ -217,7 +217,8 @@ namespace NDRO.Ruler
                         return;
                     }
 
-                    // complete
+                    curRulerPoint.Complet();
+
                     curRulerPoint = null;
 
                     // json model 저장 
@@ -237,6 +238,10 @@ namespace NDRO.Ruler
                     // 측정 완료
                     return;
                 }
+
+                // complete
+                if (curRulerPoint != null)
+                    curRulerPoint.Complet();
 
                 var rulerPointUI = Instantiate(prefabRulerPointUI, trRulerPointUIPool);
 
