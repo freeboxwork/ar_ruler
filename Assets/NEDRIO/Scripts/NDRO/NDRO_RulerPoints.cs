@@ -31,11 +31,11 @@ namespace NDRO.Ruler
             // 거리를 센티미터로 계산 및 텍스트 업데이트
             distance = distanceVector.magnitude * 100f; // 미터를 센티미터로 변환
             var disText = distance.ToString("N2");
-            textValue.text = disText; // cm 단위로 표시
+            //textValue.text = disText; // cm 단위로 표시
 
             // 카메라를 바라보도록 설정
-            if (mainCamera != null)
-                textPosition.LookAt(mainCamera.transform);
+            // if (mainCamera != null)
+            //     textPosition.LookAt(mainCamera.transform);
 
             // set ui position
             if (rulerPointUI != null)
@@ -49,7 +49,7 @@ namespace NDRO.Ruler
                 {
                     var scrPointA = GetScreenPosition(pointA);
                     var scrPointB = GetScreenPosition(pointB);
-                    rulerPointUI.SetPosition(scrPointA, scrPointB);
+                    rulerPointUI.SetPosition(scrPointA, scrPointB, mainCamera);
                     rulerPointUI.SetTextValue(disText);
 
                 }
@@ -78,14 +78,14 @@ namespace NDRO.Ruler
         {
             transform.position = position;
             pointA.position = position;
-            lineRenderer.SetPosition(0, position);
-            lineRenderer.SetPosition(1, position);
+            // lineRenderer.SetPosition(0, position);
+            // lineRenderer.SetPosition(1, position);
         }
 
         public void SetObj(Vector3 position)
         {
             pointB.position = position;
-            lineRenderer.SetPosition(1, position);
+            // lineRenderer.SetPosition(1, position);
         }
 
         public void SetMainCam(Camera cam)

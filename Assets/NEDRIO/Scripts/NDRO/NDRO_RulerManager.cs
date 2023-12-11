@@ -37,8 +37,8 @@ namespace NDRO.Ruler
         public NDRO_ARDataManager arDataManager;
         public NDRO_PolygonMeshCreator polygonMeshCreator;
 
-        [Header("Ruler Points Management")]
-        public NDRO_RulerPoints curRulerPoint;
+        //[Header("Ruler Points Management")]
+        private NDRO_RulerPoints curRulerPoint;
         private List<NDRO_RulerPoints> rulerPointPoolList = new List<NDRO_RulerPoints>();
 
         // State Variables
@@ -51,14 +51,24 @@ namespace NDRO.Ruler
         // Flags
         private bool isSurfaceDetected = false;
         private bool isFirstRulerPoint = false;
+        private bool isFirstDetectionPlane = false;
 
 
-
+        [Header("Ruler UI Controller")]
+        public NDRO_UIController uiController;
 
         void Start()
         {
+            Init();
+        }
+
+        void Init()
+        {
             scrCenterVec = new Vector2(Screen.width / 2, Screen.height / 2);
+
             SetBtnEvent();
+
+            uiController.EnablePlaneDetectionAnimUI(true);
         }
 
         void SetBtnEvent()
@@ -71,7 +81,10 @@ namespace NDRO.Ruler
         {
             RaycastFromCamera();
             HandleSurfaceDetection();
+            EnablePlaneDetactionAnim();
         }
+
+
 
 
         void RaycastFromCamera()
@@ -134,6 +147,22 @@ namespace NDRO.Ruler
             rulerPosSave = hits[0].pose.position;
         }
 
+        void EnablePlaneDetactionAnim()
+        {
+            if (isFirstDetectionPlane) return;
+
+            if (IsFirstDeteactionPlane())
+            {
+                isFirstDetectionPlane = true;
+                uiController.EnablePlaneDetectionAnimUI(false);
+            }
+        }
+
+        bool IsFirstDeteactionPlane()
+        {
+            return hits.Count > 0;
+        }
+
 
 
         // 유저가 표면을 찾았을 때 거리 측정 및 업데이트
@@ -154,7 +183,7 @@ namespace NDRO.Ruler
             {
                 lastDistance = closestDistance;
                 closestDistance = ConvertToCentimeters(closestDistance);
-                txtUserDisance.text = closestDistance.ToString("N2") + " cm";
+                txtUserDisance.text = "대상까지 " + closestDistance.ToString("N0") + " cm";
 
                 if (curRulerPoint != null)
                 {

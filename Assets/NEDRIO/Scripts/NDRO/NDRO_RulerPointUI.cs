@@ -35,7 +35,7 @@ namespace NDRO.Ruler
 
         }
 
-        public void SetPosition(Vector3 scrPointA, Vector3 scrPointB)
+        public void SetPosition(Vector3 scrPointA, Vector3 scrPointB, Camera mainCamera = null)
         {
             pointA.anchoredPosition = scrPointA;
             pointB.anchoredPosition = scrPointB;
@@ -43,10 +43,21 @@ namespace NDRO.Ruler
             Vector3 middlePoint = (scrPointA + scrPointB) / 2f;
             textBg.anchoredPosition = middlePoint;
 
-            // pointA와 pointB 사이의 각도 계산
+            // pointA와 pointB 사이의 방향 벡터 계산
             Vector2 direction = scrPointB - scrPointA;
             float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
 
+            if (mainCamera != null)
+            {
+                // 카메라 방향에 따라 각도의 부호 조정
+                Vector2 cameraDirection = (textBg.position - Camera.main.transform.position).normalized;
+                float dotProduct = Vector2.Dot(direction.normalized, cameraDirection);
+
+                if (dotProduct < 0)
+                {
+                    angle += 180;
+                }
+            }
             // textBg의 z 회전 각도 설정
             textBg.localEulerAngles = new Vector3(0, 0, angle);
 

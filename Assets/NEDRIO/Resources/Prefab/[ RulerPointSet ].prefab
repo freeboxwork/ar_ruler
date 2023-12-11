@@ -398,7 +398,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &7077076707848593781
 Transform:
   m_ObjectHideFlags: 0
@@ -533,7 +533,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &3040014853787789904
 Transform:
   m_ObjectHideFlags: 0
@@ -710,3 +710,5 @@ MonoBehaviour:
   textPosition: {fileID: 3040014853787789904}
   textValue: {fileID: 5451445705276214029}
   mainCamera: {fileID: 0}
+  distance: 0
+  rulerPointUI: {fileID: 0}
