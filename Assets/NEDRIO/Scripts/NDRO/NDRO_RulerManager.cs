@@ -65,9 +65,7 @@ namespace NDRO.Ruler
         void Init()
         {
             scrCenterVec = new Vector2(Screen.width / 2, Screen.height / 2);
-
             SetBtnEvent();
-
             uiController.EnablePlaneDetectionAnimUI(true);
         }
 
@@ -82,6 +80,7 @@ namespace NDRO.Ruler
             RaycastFromCamera();
             HandleSurfaceDetection();
             EnablePlaneDetactionAnim();
+            EnableDisatanceText();
         }
 
 
@@ -129,6 +128,31 @@ namespace NDRO.Ruler
             isFirstRulerPoint = false;
         }
 
+        bool dtext = false;
+        void EnableDisatanceText()
+        {
+            uiController.EnableUISetDistanceText(isSurfaceDetected);
+            if (isSurfaceDetected && !dtext)
+            {
+                dtext = true;
+                uiController.EnableDistanceFailUI(isSurfaceDetected);
+            }
+            else if (!isSurfaceDetected && dtext)
+            {
+                dtext = false;
+                uiController.EnableDistanceFailUI(isSurfaceDetected);
+            }
+            /*
+            if (isSurfaceDetected)
+            {
+                txtUserDisance.text = "Distance: " + lastDistance.ToString("F2") + "m";
+            }
+            else
+            {
+                txtUserDisance.text = "Please point at a surface";
+            }
+            */
+        }
 
 
 
@@ -139,7 +163,7 @@ namespace NDRO.Ruler
 
             if (!isSurfaceDetected)
             {
-                txtUserDisance.text = "Please point at a surface";
+                //txtUserDisance.text = "Please point at a surface";
                 return;
             }
 
@@ -183,7 +207,7 @@ namespace NDRO.Ruler
             {
                 lastDistance = closestDistance;
                 closestDistance = ConvertToCentimeters(closestDistance);
-                txtUserDisance.text = "대상까지 " + closestDistance.ToString("N0") + " cm";
+                uiController.SetDistanceText(closestDistance);
 
                 if (curRulerPoint != null)
                 {
@@ -193,7 +217,6 @@ namespace NDRO.Ruler
                     }
                     curRulerPoint.SetObj(rulerPosSave);
                 }
-
 
                 // 크기 조정 로직 추가
                 AdjustScaleBasedOnDistance(closestDistance);
