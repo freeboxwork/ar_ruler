@@ -132,26 +132,6 @@ namespace NDRO.Ruler
         void EnableDisatanceText()
         {
             uiController.EnableUISetDistanceText(isSurfaceDetected);
-            if (isSurfaceDetected && !dtext)
-            {
-                dtext = true;
-                uiController.EnableDistanceFailUI(isSurfaceDetected);
-            }
-            else if (!isSurfaceDetected && dtext)
-            {
-                dtext = false;
-                uiController.EnableDistanceFailUI(isSurfaceDetected);
-            }
-            /*
-            if (isSurfaceDetected)
-            {
-                txtUserDisance.text = "Distance: " + lastDistance.ToString("F2") + "m";
-            }
-            else
-            {
-                txtUserDisance.text = "Please point at a surface";
-            }
-            */
         }
 
 

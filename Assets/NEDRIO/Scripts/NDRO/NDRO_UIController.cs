@@ -8,6 +8,8 @@ public class NDRO_UIController : MonoBehaviour
     public GameObject UI_InfoAnim_PlaneDetection;
     // 거리 측정 실패 UI SET
     public GameObject UI_InfoAnimDistanceFail;
+    public GameObject UI_DisttanceTextBox;
+
 
     // distance text ui
     public GameObject UISetDistanceText;
