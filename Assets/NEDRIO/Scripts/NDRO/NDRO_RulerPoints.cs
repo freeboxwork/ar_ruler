@@ -9,7 +9,7 @@ namespace NDRO.Ruler
         public Transform pointB;
         public LineRenderer lineRenderer;
 
-        public Transform textPosition;
+        public Transform txtBox;
         public TextMeshPro textValue;
         public Camera mainCamera;
         public float distance;
@@ -26,12 +26,30 @@ namespace NDRO.Ruler
             Vector3 distanceVector = pointB.position - pointA.position;
 
             // 텍스트 위치 설정
-            textPosition.position = pointA.position + distanceVector * 0.5f;
+            txtBox.position = pointA.position + distanceVector * 0.5f;
 
             // 거리를 센티미터로 계산 및 텍스트 업데이트
             distance = distanceVector.magnitude * 100f; // 미터를 센티미터로 변환
-            var disText = distance.ToString("N2");
-            //textValue.text = disText; // cm 단위로 표시
+            var disText = distance.ToString("N0") + "cm";
+            textValue.text = disText; // cm 단위로 표시
+
+            Vector3 direction = pointB.position - pointA.position;
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+
+
+            if (mainCamera != null)
+            {
+                // 카메라 방향에 따라 각도의 부호 조정
+                Vector2 cameraDirection = (txtBox.position - mainCamera.transform.position).normalized;
+                float dotProduct = Vector3.Dot(direction.normalized, cameraDirection);
+
+                if (dotProduct < 0)
+                {
+                    angle += 180;
+                }
+            }
+            // txtBoxdml z 회전 각도 설정
+            txtBox.localEulerAngles = new Vector3(0, 0, angle);
 
             // 카메라를 바라보도록 설정
             // if (mainCamera != null)
@@ -49,14 +67,14 @@ namespace NDRO.Ruler
                 {
                     var scrPointA = GetScreenPosition(pointA);
                     var scrPointB = GetScreenPosition(pointB);
-                    rulerPointUI.SetPosition(scrPointA, scrPointB, mainCamera);
-                    rulerPointUI.SetTextValue(disText);
+                    // rulerPointUI.SetPosition(scrPointA, scrPointB, mainCamera);
+                    // rulerPointUI.SetTextValue(disText);
 
                 }
                 else
                 {
                     // UI 요소를 화면 밖으로 이동하여 숨깁니다.
-                    rulerPointUI.SetPosition(new Vector3(-1000, -1000, 0), new Vector3(-1000, -1000, 0));
+                    //  rulerPointUI.SetPosition(new Vector3(-1000, -1000, 0), new Vector3(-1000, -1000, 0));
                 }
             }
         }
@@ -78,14 +96,14 @@ namespace NDRO.Ruler
         {
             transform.position = position;
             pointA.position = position;
-            // lineRenderer.SetPosition(0, position);
-            // lineRenderer.SetPosition(1, position);
+            lineRenderer.SetPosition(0, position);
+            lineRenderer.SetPosition(1, position);
         }
 
         public void SetObj(Vector3 position)
         {
             pointB.position = position;
-            // lineRenderer.SetPosition(1, position);
+            lineRenderer.SetPosition(1, position);
         }
 
         public void SetMainCam(Camera cam)
@@ -95,12 +113,12 @@ namespace NDRO.Ruler
 
         public void Complet()
         {
-            rulerPointUI.SetCompleteLine();
+            //rulerPointUI.SetCompleteLine();
         }
 
         public void UnComplet()
         {
-            rulerPointUI.SetProgressLine();
+            // rulerPointUI.SetProgressLine();
         }
     }
 

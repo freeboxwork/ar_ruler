@@ -275,12 +275,13 @@ namespace NDRO.Ruler
                 if (curRulerPoint != null)
                     curRulerPoint.Complet();
 
-                var rulerPointUI = Instantiate(prefabRulerPointUI, trRulerPointUIPool);
+                //var rulerPointUI = Instantiate(prefabRulerPointUI, trRulerPointUIPool);
 
                 NDRO_RulerPoints tObj = Instantiate(prefabRulerPoint, trRulerPool);
                 tObj.transform.position = Vector3.zero;
                 tObj.transform.localScale = Vector3.one;
-                tObj.rulerPointUI = rulerPointUI;
+                
+                //tObj.rulerPointUI = rulerPointUI;
 
                 if (curRulerPoint != null)
                 {
