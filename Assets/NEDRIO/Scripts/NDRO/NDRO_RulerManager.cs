@@ -140,7 +140,7 @@ namespace NDRO.Ruler
 
         void HandleSurfaceDetection()
         {
-            isSurfaceDetected = rayManager.Raycast(scrCenterVec, hits, TrackableType.PlaneWithinPolygon);
+            isSurfaceDetected = rayManager.Raycast(scrCenterVec, hits, TrackableType.PlaneEstimated);
             UpdateAlpha(isSurfaceDetected);
 
             if (!isSurfaceDetected)
