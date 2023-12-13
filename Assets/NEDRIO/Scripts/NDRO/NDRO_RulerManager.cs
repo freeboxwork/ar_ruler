@@ -53,6 +53,8 @@ namespace NDRO.Ruler
         private bool isFirstRulerPoint = false;
         private bool isFirstDetectionPlane = false;
 
+        Pose hitPose;
+        Vector3 hitUpSide;
 
         [Header("Ruler UI Controller")]
         public NDRO_UIController uiController;
@@ -149,6 +151,7 @@ namespace NDRO.Ruler
 
             UpdateDistance();
             rulerPosSave = hits[0].pose.position;
+            hitPose = hits[0].pose;
         }
 
         void EnablePlaneDetactionAnim()
@@ -280,7 +283,7 @@ namespace NDRO.Ruler
                 NDRO_RulerPoints tObj = Instantiate(prefabRulerPoint, trRulerPool);
                 tObj.transform.position = Vector3.zero;
                 tObj.transform.localScale = Vector3.one;
-                
+
                 //tObj.rulerPointUI = rulerPointUI;
 
                 if (curRulerPoint != null)
@@ -292,7 +295,7 @@ namespace NDRO.Ruler
                     tObj.pointA.tag = "firstRulerPoint";
                 }
 
-                tObj.SetInits(rulerPosSave);
+                tObj.SetInits(rulerPosSave, hitPose);
                 tObj.SetMainCam(cam);
                 rulerPointPoolList.Add(tObj);
 
