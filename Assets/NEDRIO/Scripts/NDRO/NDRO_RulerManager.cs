@@ -43,6 +43,8 @@ namespace NDRO.Ruler
 
         // State Variables
         private RaycastHit hit;
+        public Transform curHitTr;
+
         private List<ARRaycastHit> hits = new List<ARRaycastHit>();
         private Vector3 rulerPosSave;
         private float lastDistance = -1;
@@ -55,9 +57,15 @@ namespace NDRO.Ruler
 
         Pose hitPose;
         Vector3 hitUpSide;
+        public NDRO_EnumDefinition.PlaneDirType planeDirType;
 
         [Header("Ruler UI Controller")]
         public NDRO_UIController uiController;
+
+        public Material lineMaterial;
+        public Material curveLineMaterial;
+
+        DistanceScaleRange pivotScaleRange = new DistanceScaleRange(10f, 300f, 1.0f, 0.3f);
 
         void Start()
         {
@@ -93,11 +101,13 @@ namespace NDRO.Ruler
             if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit))
             {
                 isFirstRulerPoint = hit.transform.CompareTag("firstRulerPoint");
+                curHitTr = hit.transform;
                 // path close
                 HandleFirstRulerPoint();
             }
             else
             {
+                curHitTr = null;
                 ResetPivotCenterPosition();
             }
         }
@@ -120,7 +130,7 @@ namespace NDRO.Ruler
             Vector3 worldPoint = cam.ScreenToWorldPoint(screenPoint);
 
             // Smoothly interpolate the trPivotCenter position to the worldPoint
-            trPivotCenter.transform.position = Vector3.Lerp(trPivotCenter.transform.position, worldPoint, Time.deltaTime * 20f);
+            trPivotCenter.transform.position = Vector3.Lerp(trPivotCenter.transform.position, worldPoint, Time.deltaTime * 10f);
         }
 
         void ResetPivotCenterPosition()
@@ -140,7 +150,7 @@ namespace NDRO.Ruler
 
         void HandleSurfaceDetection()
         {
-            isSurfaceDetected = rayManager.Raycast(scrCenterVec, hits, TrackableType.PlaneEstimated);
+            isSurfaceDetected = rayManager.Raycast(scrCenterVec, hits, TrackableType.PlaneWithinPolygon);
             UpdateAlpha(isSurfaceDetected);
 
             if (!isSurfaceDetected)
@@ -201,8 +211,9 @@ namespace NDRO.Ruler
                     curRulerPoint.SetObj(rulerPosSave);
                 }
 
-                // 크기 조정 로직 추가
-                AdjustScaleBasedOnDistance(closestDistance);
+                //거리에 따른 크기 조정 로직 추가
+                //AdjustScaleBasedOnDistance(closestDistance, trPivitObj, pivotScaleRange);
+                trPivitObj.localScale = NdroUtilityMethod.AdjustScaleBasedOnDistance(closestDistance, pivotScaleRange);
             }
         }
 
@@ -212,6 +223,8 @@ namespace NDRO.Ruler
         {
             return meters * 100f;
         }
+
+
 
         void AdjustScaleBasedOnDistance(float distance)
         {
@@ -225,6 +238,18 @@ namespace NDRO.Ruler
             trPivitObj.localScale = new Vector3(scale, scale, scale);
         }
 
+        //trPivitObj
+        void AdjustScaleBasedOnDistance(float distance, Transform transform, DistanceScaleRange range)
+        {
+            // 거리를 minDistance ~ maxDistance 사이의 값으로 제한
+            distance = Mathf.Clamp(distance, range.minDistance, range.maxDistance);
+
+            // 거리에 따른 스케일 계산 (minDistance에서는 minScale, maxDistance에서는 maxScale)
+            float scale = Mathf.Lerp(range.minScale, range.maxScale, (distance - range.minDistance) / (range.maxDistance - range.minDistance));
+
+            // 스케일 적용
+            transform.localScale = new Vector3(scale, scale, scale);
+        }
 
         void UpdateAlpha(bool isSurfaceDetected)
         {
@@ -242,6 +267,8 @@ namespace NDRO.Ruler
         {
             if (isSurfaceDetected)
             {
+
+                var curHitObjTr = curHitTr;
 
                 if (isFirstRulerPoint)
                 {
@@ -261,26 +288,43 @@ namespace NDRO.Ruler
                     arDataManager.SaveTapeRulerData(rulerPointPoolList, "test_customer", "test_customer_code");
 
                     // mesh 생성
-                    polygonMeshCreator.InitMeshCreater(rulerPointPoolList);
+                    polygonMeshCreator.InitMeshCreater(rulerPointPoolList, out GameObject meshObject);
 
                     // mesh 정보 출력
                     var vectors = NDRO_PolygonPlaneCalculator.GetVectorsByNDRO_RulerPoints(rulerPointPoolList);
                     var info = NDRO_PolygonPlaneCalculator.CalculateDimensions(vectors);
                     Debug.Log($"width: {info.width}, height: {info.height}, plane: {info.plane}");
 
-                    rulerPointPoolList.Clear();
+                    // info 
+                    var drawer = meshObject.AddComponent<NDRO_MeshDimensionDrawer>();
+                    drawer.lineMaterial = lineMaterial;
+                    drawer.curveLineMaterial = curveLineMaterial;
+                    drawer.planeType = info.plane;
+                    drawer.DrawDimensions(meshObject);
 
+                    rulerPointPoolList.Clear();
+                    planeDirType = NDRO_EnumDefinition.PlaneDirType.none;
                     // 측정 완료
+
                     return;
                 }
 
-                // complete
+                var dri = curHitObjTr.GetComponent<ARPlane>().classification;
+                Debug.Log("dri: " + dri);
+
+                if (curRulerPoint != null && planeDirType != GetDetectPlaneType(curHitObjTr))
+                {
+                    Debug.Log("평면이 다릅니다.");
+                    return;
+                }
+
+                // 2개의 라인이 연결됨. complete
                 if (curRulerPoint != null)
                     curRulerPoint.Complet();
 
                 //var rulerPointUI = Instantiate(prefabRulerPointUI, trRulerPointUIPool);
 
-                NDRO_RulerPoints tObj = Instantiate(prefabRulerPoint, trRulerPool);
+                NDRO_RulerPoints tObj = Instantiate(prefabRulerPoint, trRulerPool, curHitTr);
                 tObj.transform.position = Vector3.zero;
                 tObj.transform.localScale = Vector3.one;
 
@@ -292,26 +336,78 @@ namespace NDRO.Ruler
                 }
                 else
                 {
+                    // set tag first point
                     tObj.pointA.tag = "firstRulerPoint";
+
+                    // set plane first dir type
+                    planeDirType = GetDetectPlaneType(curHitObjTr);
+
+                    Debug.Log("planeDirType: " + planeDirType);
+
                 }
 
-                tObj.SetInits(rulerPosSave, hitPose);
+                tObj.SetInits(rulerPosSave, hitPose, this, cam);
                 tObj.SetMainCam(cam);
                 rulerPointPoolList.Add(tObj);
-
-
-
-
                 curRulerPoint = tObj;
 
             }
-            // else
-            // {
-            //     curRulerPoint = null;
-            // }
+        }
+
+        NDRO_EnumDefinition.PlaneDirType GetDetectPlaneType(Transform transform)
+        {
+            return IsRotationHorizontal(transform) ? NDRO_EnumDefinition.PlaneDirType.horizontal : NDRO_EnumDefinition.PlaneDirType.vertical;
+        }
+
+        bool IsRotationHorizontal(Transform transform)
+        {
+            Vector3 forward = transform.forward; // 전방향 벡터
+            Vector3 up = transform.up; // 위쪽 방향 벡터
+
+            // forward 벡터가 수평면 내에 있는지 확인
+            bool isForwardHorizontal = Mathf.Abs(Vector3.Dot(forward, Vector3.up)) < 0.1f;
+
+            // up 벡터가 수직으로 향하고 있는지 확인
+            bool isUpVertical = Vector3.Dot(up, Vector3.up) > 0.9f;
+
+            return isForwardHorizontal && isUpVertical;
         }
 
 
+    }
+
+    /// <summary>
+    /// 거리와 스케일의 최소값과 최대값을 정의하는 구조체입니다.
+    /// </summary>
+    public struct DistanceScaleRange
+    {
+        /// <summary>
+        /// 거리의 최소값 (cm 단위).
+        /// </summary>
+        public float minDistance;
+
+        /// <summary>
+        /// 거리의 최대값 (cm 단위).
+        /// </summary>
+        public float maxDistance;
+
+        /// <summary>
+        /// 최소 거리에서의 스케일 값.
+        /// </summary>
+        public float minScale;
+
+        /// <summary>
+        /// 최대 거리에서의 스케일 값.
+        /// </summary>
+        public float maxScale;
+
+        public DistanceScaleRange(float minDistance, float maxDistance, float minScale, float maxScale)
+        {
+            this.minDistance = minDistance;
+            this.maxDistance = maxDistance;
+            this.minScale = minScale;
+            this.maxScale = maxScale;
+        }
     }
 
 }

@@ -12,20 +12,21 @@ namespace NDRO.Ruler
 
         }
 
-        public void InitMeshCreater(List<NDRO_RulerPoints> rulerPoints)
+        public void InitMeshCreater(List<NDRO_RulerPoints> rulerPoints, out GameObject meshObject)
         {
             List<Transform> points = new List<Transform>();
             for (int i = 0; i < rulerPoints.Count; i++)
             {
                 points.Add(rulerPoints[i].pointA);
             }
-            CreateMesh(points);
+            CreateMesh(points, out meshObject);
         }
 
-        public void CreateMesh(List<Transform> points)
+        public void CreateMesh(List<Transform> points, out GameObject _meshObject)
         {
             GameObject meshObject = CreatePolygonMesh(points);
             AdjustMeshPivot(meshObject);
+            _meshObject = meshObject;
         }
 
         GameObject CreatePolygonMesh(List<Transform> points)

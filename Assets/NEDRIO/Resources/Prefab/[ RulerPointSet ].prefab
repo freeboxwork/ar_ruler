@@ -423,7 +423,7 @@ Transform:
   m_GameObject: {fileID: 4299843614210766222}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -0.0109}
   m_LocalScale: {x: 0.7, y: 0.7, z: 0.7}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -755,7 +755,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pointA: {fileID: 878380835797715978}
   pointB: {fileID: 6878713921517435225}
+  mrPointA: {fileID: 1367105130920553238}
+  mrPointB: {fileID: 8168602108010726741}
   lineRenderer: {fileID: 2385309875285842408}
+  rdTxtBg: {fileID: 6815681529889809526}
   txtBox: {fileID: 3040014853787789904}
   textValue: {fileID: 5451445705276214029}
   mainCamera: {fileID: 0}

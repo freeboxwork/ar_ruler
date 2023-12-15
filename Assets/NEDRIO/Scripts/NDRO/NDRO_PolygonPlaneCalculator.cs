@@ -4,6 +4,15 @@ using NDRO.Ruler;
 
 public static class NDRO_PolygonPlaneCalculator
 {
+
+    public static Color lineColor = Color.red;
+    public static float lineWidth = 0.02f;
+    public static Material lineMaterial;
+
+    public static Font textFont;
+    public static float textSize = 0.1f;
+    public static Color textColor = Color.blue;
+
     public static List<Vector3> GetVectorsByNDRO_RulerPoints(List<NDRO_RulerPoints> rulerPoints)
     {
         List<Vector3> vectors = new List<Vector3>();

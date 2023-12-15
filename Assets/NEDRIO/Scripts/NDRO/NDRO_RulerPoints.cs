@@ -15,7 +15,6 @@ namespace NDRO.Ruler
             { new Vector3(0f,0f,-1f), new Vector3(0, 90, 0) }
         };
 
-
         public enum Direction
         {
             Up,      // 상 (0, 1, 0) : (0,0,-90)
@@ -27,7 +26,10 @@ namespace NDRO.Ruler
         }
         public Transform pointA;
         public Transform pointB;
+        public MeshRenderer mrPointA;
+        public MeshRenderer mrPointB;
         public LineRenderer lineRenderer;
+        public SpriteRenderer rdTxtBg;
 
         public Transform txtBox;
         public TextMeshPro textValue;
@@ -38,14 +40,51 @@ namespace NDRO.Ruler
 
         public Transform txtSet;
 
+        NDRO_RulerManager rulerManager;
+
+
+
         //public Pose hitPose;
+
+        // SCALE RANGE
+        DistanceScaleRange scaleRange_point = new DistanceScaleRange(10f, 300f, 0.01f, 0.02f);
+        DistanceScaleRange scaleRange_line = new DistanceScaleRange(10f, 300f, 0.002f, 0.009f);
+        DistanceScaleRange scaleRange_textBox = new DistanceScaleRange(10f, 300f, 0.2f, 2f);
+
+        bool isComplete = false;
+
+
 
         void Start()
         {
 
         }
+
+        float GetCamDisance()
+        {
+            var camPos = mainCamera.transform.position;
+            var dis = Vector3.Distance(camPos, transform.position);
+            return dis * 100f;
+        }
+
         void Update()
         {
+            // 사용자 거리에 따른 스케일 조정
+            var dis = GetCamDisance();
+            pointA.localScale = NdroUtilityMethod.AdjustScaleBasedOnDistance(dis, scaleRange_point);
+            pointB.localScale = NdroUtilityMethod.AdjustScaleBasedOnDistance(dis, scaleRange_point);
+            lineRenderer.startWidth = NdroUtilityMethod.AdjustValueBasedOnDistance(dis, scaleRange_line);
+            txtBox.localScale = NdroUtilityMethod.AdjustScaleBasedOnDistance(dis, scaleRange_textBox);
+
+
+
+            if (isComplete)
+            {
+                return;
+            }
+
+
+
             Vector3 distanceVector = pointB.position - pointA.position;
 
             // 텍스트 위치 설정
@@ -83,7 +122,23 @@ namespace NDRO.Ruler
 
             //Debug.Log("angle : " + angle);
 
-            // if (transform.rotation == Quaternion.Euler(0, -90, 0))
+            switch (rulerManager.planeDirType)
+            {
+                case NDRO_EnumDefinition.PlaneDirType.horizontal:
+                    if (angle >= -90 && angle <= 90)
+                    {
+                        angle += 180;
+                    }
+                    break;
+                case NDRO_EnumDefinition.PlaneDirType.vertical:
+                    if (angle < 0)
+                    {
+                        angle += 180;
+                    }
+                    break;
+            }
+
+            // if (rulerManager.planeDirType == NDRO_EnumDefinition.PlaneDirType.horizontal)) // horizontal
             // {
             //     //angle += 180;
             //     //Debug.Log("floor!");
@@ -93,7 +148,7 @@ namespace NDRO.Ruler
             //     }
             // }
 
-            // else
+            // else // vertical
             // {
             //     if (angle < 0)
             //     {
@@ -161,41 +216,21 @@ namespace NDRO.Ruler
         }
 
 
-        public void SetInits(Vector3 position, Pose hitPose)
+        public void SetInits(Vector3 position, Pose hitPose, NDRO_RulerManager rulerManager, Camera cam)
         {
             transform.position = position;
             pointA.position = position;
             lineRenderer.SetPosition(0, position);
             lineRenderer.SetPosition(1, position);
+            this.rulerManager = rulerManager;
+            mainCamera = cam;
 
             if (hitPose != null)
             {
-                var forwardDir = hitPose.rotation * Vector3.forward;
-                var rotAngle = GetRotationFromDirection(forwardDir);
-                Debug.Log("hitPose : " + hitPose.rotation.eulerAngles);
-                // Debug.Log("pose dir" + forwardDir);
-                // Debug.Log("rotAngle : " + rotAngle);
-
                 gameObject.transform.rotation = hitPose.rotation;
-                //var dir = GetClosestDirection(forwardDir);
-                //txtBox.localRotation = Quaternion.Euler(hitPose.rotation.eulerAngles);
             }
         }
 
-        public Vector3 GetRotationFromDirection(Vector3 direction)
-        {
-            direction.Normalize(); // 입력 벡터 정규화
-            Debug.Log("direction : " + direction);
-
-            if (direction == Vector3.up) return new Vector3(0, 0, -90);
-            else if (direction == Vector3.down) return new Vector3(0, 0, 90);
-            else if (direction == Vector3.left) return new Vector3(90, 0, 0);
-            else if (direction == Vector3.right) return new Vector3(-90, 0, 0);
-            else if (direction == Vector3.forward) return new Vector3(0, -90, 0);
-            else if (direction == Vector3.back) return new Vector3(0, 90, 0);
-
-            return Vector3.zero; // 기본 회전 반환
-        }
 
         public void SetObj(Vector3 position)
         {
@@ -210,11 +245,27 @@ namespace NDRO.Ruler
 
         public void Complet()
         {
+            isComplete = true;
+
+            lineRenderer.material.SetColor("_LineColor", Color.white);
+            lineRenderer.material.SetFloat("_DashLength", 0f);
+            mrPointA.material.SetColor("_Color", Color.white);
+            mrPointB.material.SetColor("_Color", Color.white);
+            rdTxtBg.color = Color.white;
+
             //rulerPointUI.SetCompleteLine();
         }
 
         public void UnComplet()
         {
+            isComplete = false;
+
+            lineRenderer.material.SetColor("_LineColor", Color.yellow);
+            lineRenderer.material.SetFloat("_DashLength", 0.05f);
+            mrPointA.material.SetColor("_Color", Color.yellow);
+            mrPointB.material.SetColor("_Color", Color.yellow);
+            rdTxtBg.color = new Color32(255, 190, 0, 255);
+
             // rulerPointUI.SetProgressLine();
         }
 
