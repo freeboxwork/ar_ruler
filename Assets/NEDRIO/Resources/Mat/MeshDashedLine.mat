@@ -32,5 +32,5 @@ Material:
     - _DashLength: 0.05
     - _RoundedCaps: 0.1
     m_Colors:
-    - _LineColor: {r: 1, g: 1, b: 1, a: 1}
+    - _LineColor: {r: 1, g: 0.88418823, b: 0, a: 1}
   m_BuildTextureStacks: []
