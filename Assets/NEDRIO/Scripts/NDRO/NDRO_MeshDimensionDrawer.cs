@@ -49,16 +49,16 @@ namespace NDRO.Ruler
             switch (planeType)
             {
                 case "XY":
-                    DrawLine(meshObject.transform, leftBottom, leftBottom + new Vector3(size.x, 0, 0)); // X축 라인
-                    DrawLine(meshObject.transform, leftBottom, leftBottom - new Vector3(0, size.y, 0)); // Y축 라인
+                    DrawLine(meshObject.transform, leftBottom, leftBottom + new Vector3(size.x, 0, 0), "x"); // X축 라인
+                    DrawLine(meshObject.transform, leftBottom, leftBottom - new Vector3(0, size.y, 0), "y"); // Y축 라인
                     break;
                 case "XZ":
                     DrawLine(meshObject.transform, leftBottom, leftBottom + new Vector3(size.x, 0, 0), "x"); // X축 라인
                     DrawLine(meshObject.transform, leftBottom, leftBottom - new Vector3(0, 0, size.z), "z"); // Z축 라인
                     break;
                 case "YZ":
-                    DrawLine(meshObject.transform, leftBottom, leftBottom + new Vector3(0, size.y, 0)); // Y축 라인
-                    DrawLine(meshObject.transform, leftBottom, leftBottom - new Vector3(0, 0, size.z)); // Z축 라인
+                    DrawLine(meshObject.transform, leftBottom, leftBottom + new Vector3(0, size.y, 0), "y"); // Y축 라인
+                    DrawLine(meshObject.transform, leftBottom, leftBottom - new Vector3(0, 0, size.z), "z"); // Z축 라인
                     break;
             }
 
@@ -86,7 +86,10 @@ namespace NDRO.Ruler
             switch (planeType)
             {
                 case "XY":
-                    center = new Vector3(center.x, center.y, center.z + height);
+                    if (direction == "x")
+                        center = new Vector3(center.x, center.y, center.z + height);
+                    else
+                        center = new Vector3(center.x - height, center.y, center.z);
                     break;
                 case "XZ":
                     if (direction == "x")
@@ -95,7 +98,10 @@ namespace NDRO.Ruler
                         center = new Vector3(center.x - height, center.y, center.z);
                     break;
                 case "YZ":
-                    center = new Vector3(center.x + height, center.y, center.z);
+                    if (direction == "y")
+                        center = new Vector3(center.x + height, center.y, center.z);
+                    else
+                        center = new Vector3(center.x, center.y, center.z + height);
                     break;
             }
             DrawCurve(parent, start, center, end);
