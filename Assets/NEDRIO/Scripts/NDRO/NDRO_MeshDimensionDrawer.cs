@@ -7,19 +7,46 @@ namespace NDRO.Ruler
         public float lineWidth = 0.005f;
         public Material lineMaterial;
         public Material curveLineMaterial;
+        public Material infoMeshMaterial;
         public string planeType;
 
 
         //포물선
-        public int resolution = 20; // 포물선을 구성하는 포인트의 수
-        public int segmentCount = 20;
+        public int segmentCount = 20;// 포물선을 구성하는 포인트의 수
         float height = 0.15f;  // 포물선 높이 설정
 
+
+        ResultText resultTextPrefab;
+        ResultInfo resultInfo;
+        Transform parent;
+
+        public LineRenderer lrWidth;
+        public LineRenderer lrHeight;
+        public LineRenderer lrWidthCurve;
+        public LineRenderer lrHeightCurve;
+
+        public MeshFilter infoMeshFilter;
+        public ResultText infoTextWidth;
+        public ResultText infoTextHeight;
+        public ResultText infoTextPlane;
+
+        public Transform point_0;
+        public Transform point_1;
+        public Transform point_2;
+        public Transform point_3;
+
+
+
         // 메시의 높이와 너비를 그리기
-        public void DrawDimensions(GameObject meshObject)
+        public void DrawDimensions(GameObject meshObject, ResultText resultTextPrefab, ResultInfo resultInfo)
         {
             MeshRenderer meshRenderer = meshObject.GetComponent<MeshRenderer>();
             if (meshRenderer == null) return;
+
+            parent = Instantiate(new GameObject("DimensionLineParent"), transform.transform).transform;
+
+            this.resultTextPrefab = resultTextPrefab;
+            this.resultInfo = resultInfo;
 
             Bounds bounds = meshRenderer.bounds;
             Vector3 center = bounds.center;
@@ -49,26 +76,26 @@ namespace NDRO.Ruler
             switch (planeType)
             {
                 case "XY":
-                    DrawLine(meshObject.transform, leftBottom, leftBottom + new Vector3(size.x, 0, 0), "x"); // X축 라인
-                    DrawLine(meshObject.transform, leftBottom, leftBottom - new Vector3(0, size.y, 0), "y"); // Y축 라인
+                    DrawLine(lrWidth, lrWidthCurve, leftBottom, leftBottom + new Vector3(size.x, 0, 0), "x"); // X축 라인
+                    DrawLine(lrHeight, lrHeightCurve, leftBottom, leftBottom + new Vector3(0, size.y, 0), "y"); // Y축 라인
                     break;
                 case "XZ":
-                    DrawLine(meshObject.transform, leftBottom, leftBottom + new Vector3(size.x, 0, 0), "x"); // X축 라인
-                    DrawLine(meshObject.transform, leftBottom, leftBottom - new Vector3(0, 0, size.z), "z"); // Z축 라인
+                    DrawLine(lrWidth, lrWidthCurve, leftBottom, leftBottom + new Vector3(size.x, 0, 0), "x"); // X축 라인
+                    DrawLine(lrHeight, lrHeightCurve, leftBottom, leftBottom - new Vector3(0, 0, size.z), "z"); // Z축 라인
                     break;
                 case "YZ":
-                    DrawLine(meshObject.transform, leftBottom, leftBottom + new Vector3(0, size.y, 0), "y"); // Y축 라인
-                    DrawLine(meshObject.transform, leftBottom, leftBottom - new Vector3(0, 0, size.z), "z"); // Z축 라인
+                    DrawLine(lrWidth, lrWidthCurve, leftBottom, leftBottom + new Vector3(0, size.y, 0), "y"); // Y축 라인
+                    DrawLine(lrHeight, lrHeightCurve, leftBottom, leftBottom - new Vector3(0, 0, size.z), "z"); // Z축 라인
                     break;
             }
 
         }
 
-        private void DrawLine(Transform parent, Vector3 start, Vector3 end, string direction = "")
+        private void DrawLine(LineRenderer lineRenderer, LineRenderer lineCurve, Vector3 start, Vector3 end, string direction = "")
         {
-            GameObject lineObj = new GameObject("DimensionLine");
-            lineObj.transform.SetParent(parent, false);
-            LineRenderer lineRenderer = lineObj.AddComponent<LineRenderer>();
+            // GameObject lineObj = new GameObject("DimensionLine");
+            // lineObj.transform.SetParent(parent, false);
+            // LineRenderer lineRenderer = lineObj.AddComponent<LineRenderer>();
 
             lineRenderer.material = lineMaterial;
             lineRenderer.startColor = lineColor;
@@ -87,37 +114,61 @@ namespace NDRO.Ruler
             {
                 case "XY":
                     if (direction == "x")
+                    {
                         center = new Vector3(center.x, center.y, center.z + height);
+                        InitInfoText(infoTextWidth, center, resultInfo.width.ToString("0.00"), new Vector3(0, -180, 0));
+                    }
                     else
+                    {
                         center = new Vector3(center.x - height, center.y, center.z);
+                        InitInfoText(infoTextHeight, center, resultInfo.height.ToString("0.00"), new Vector3(180, 0, 90));
+                    }
+
                     break;
                 case "XZ":
                     if (direction == "x")
+                    {
                         center = new Vector3(center.x, center.y, center.z + height);
+                        InitInfoText(infoTextWidth, center, resultInfo.width.ToString("0.00"), new Vector3(90, 0, 0));
+                    }
+
                     else
+                    {
                         center = new Vector3(center.x - height, center.y, center.z);
+                        InitInfoText(infoTextHeight, center, resultInfo.height.ToString("0.00"), new Vector3(90, 0, -90));
+                    }
+
                     break;
                 case "YZ":
                     if (direction == "y")
-                        center = new Vector3(center.x + height, center.y, center.z);
-                    else
+                    {
                         center = new Vector3(center.x, center.y, center.z + height);
+                        InitInfoText(infoTextWidth, center, resultInfo.width.ToString("0.00"), new Vector3(0, 90, 90));
+                    }
+                    else
+                    {
+                        center = new Vector3(center.x, center.y - height, center.z);
+                        InitInfoText(infoTextHeight, center, resultInfo.height.ToString("0.00"), new Vector3(0, 90, 0));
+                    }
                     break;
             }
-            DrawCurve(parent, start, center, end);
+            DrawCurve(lineCurve, start, center, end);
         }
 
-
-        // 포물선을 그리는 메서드
-
-
+        void InitInfoText(ResultText resultText, Vector3 pos, string value, Vector3 rotValue)
+        {
+            //var resultText = Instantiate(resultTextPrefab, parent);
+            resultText.transform.position = pos;
+            resultText.transform.eulerAngles = rotValue;
+            resultText.SetTxtValue(value);
+        }
 
         // 베지어 곡선을 그리는 메서드
-        public void DrawCurve(Transform parent, Vector3 startPosition, Vector3 centerPosition, Vector3 endPosition)
+        public void DrawCurve(LineRenderer lineRenderer, Vector3 startPosition, Vector3 centerPosition, Vector3 endPosition)
         {
-            GameObject lineObj = new GameObject("curve line");
-            lineObj.transform.SetParent(parent, false);
-            LineRenderer lineRenderer = lineObj.AddComponent<LineRenderer>();
+            // GameObject lineObj = new GameObject("curve line");
+            // lineObj.transform.SetParent(parent, false);
+            // LineRenderer lineRenderer = lineObj.AddComponent<LineRenderer>();
             lineRenderer.material = curveLineMaterial;
             lineRenderer.startWidth = lineWidth;
             lineRenderer.endWidth = lineWidth;
@@ -133,6 +184,9 @@ namespace NDRO.Ruler
             lineRenderer.positionCount = segmentCount;
             lineRenderer.SetPositions(curvePoints);
         }
+
+        // text mesh 생성
+
 
         // 베지어 곡선의 특정 지점을 계산하는 메서드
         private Vector3 CalculateBezierPoint(float t, Vector3 start, Vector3 center, Vector3 end)

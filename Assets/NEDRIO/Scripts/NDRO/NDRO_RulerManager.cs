@@ -65,6 +65,10 @@ namespace NDRO.Ruler
         public Material lineMaterial;
         public Material curveLineMaterial;
 
+        public ResultText resultTextPrefab;
+
+        public NDRO_MeshDimensionDrawer meshDimensionDrawerPrefab;
+
         DistanceScaleRange pivotScaleRange = new DistanceScaleRange(10f, 300f, 1.0f, 0.3f);
 
         void Start()
@@ -293,14 +297,16 @@ namespace NDRO.Ruler
                     // mesh 정보 출력
                     var vectors = NDRO_PolygonPlaneCalculator.GetVectorsByNDRO_RulerPoints(rulerPointPoolList);
                     var info = NDRO_PolygonPlaneCalculator.CalculateDimensions(vectors);
+                    ResultInfo resultInfo = new ResultInfo(info.width, info.height, info.plane);
+
                     Debug.Log($"width: {info.width}, height: {info.height}, plane: {info.plane}");
 
                     // info 
-                    var drawer = meshObject.AddComponent<NDRO_MeshDimensionDrawer>();
-                    drawer.lineMaterial = lineMaterial;
-                    drawer.curveLineMaterial = curveLineMaterial;
+                    NDRO_MeshDimensionDrawer drawer = Instantiate(meshDimensionDrawerPrefab, meshObject.transform); // meshObject.AddComponent<NDRO_MeshDimensionDrawer>();
+                    // drawer.lineMaterial = lineMaterial;
+                    // drawer.curveLineMaterial = curveLineMaterial;
                     drawer.planeType = info.plane;
-                    drawer.DrawDimensions(meshObject);
+                    drawer.DrawDimensions(meshObject, resultTextPrefab, resultInfo);
 
                     rulerPointPoolList.Clear();
                     planeDirType = NDRO_EnumDefinition.PlaneDirType.none;
@@ -407,6 +413,20 @@ namespace NDRO.Ruler
             this.maxDistance = maxDistance;
             this.minScale = minScale;
             this.maxScale = maxScale;
+        }
+    }
+
+    public struct ResultInfo
+    {
+        public float width;
+        public float height;
+        public string plane;
+
+        public ResultInfo(float width, float height, string plane)
+        {
+            this.width = width;
+            this.height = height;
+            this.plane = plane;
         }
     }
 
