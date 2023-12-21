@@ -306,6 +306,7 @@ namespace NDRO.Ruler
                     // drawer.lineMaterial = lineMaterial;
                     // drawer.curveLineMaterial = curveLineMaterial;
                     drawer.planeType = info.plane;
+                    drawer.rulerManager = this;
                     drawer.DrawDimensions(meshObject, resultTextPrefab, resultInfo);
 
                     rulerPointPoolList.Clear();

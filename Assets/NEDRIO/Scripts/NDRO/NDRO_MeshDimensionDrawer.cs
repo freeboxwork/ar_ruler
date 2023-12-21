@@ -34,7 +34,9 @@ namespace NDRO.Ruler
         public Transform point_1;
         public Transform point_2;
         public Transform point_3;
+        public Transform point_4;
 
+        public NDRO_RulerManager rulerManager;
 
 
         // 메시의 높이와 너비를 그리기
@@ -49,6 +51,9 @@ namespace NDRO.Ruler
             this.resultInfo = resultInfo;
 
             Bounds bounds = meshRenderer.bounds;
+
+
+
             Vector3 center = bounds.center;
             Vector3 size = bounds.size;
 
@@ -76,26 +81,41 @@ namespace NDRO.Ruler
             switch (planeType)
             {
                 case "XY":
-                    DrawLine(lrWidth, lrWidthCurve, leftBottom, leftBottom + new Vector3(size.x, 0, 0), "x"); // X축 라인
-                    DrawLine(lrHeight, lrHeightCurve, leftBottom, leftBottom + new Vector3(0, size.y, 0), "y"); // Y축 라인
+                    DrawLine(point_0, point_1, lrWidth, lrWidthCurve, leftBottom, leftBottom + new Vector3(size.x, 0, 0), "x"); // X축 라인
+                    DrawLine(point_2, point_3, lrHeight, lrHeightCurve, leftBottom, leftBottom + new Vector3(0, size.y, 0), "y"); // Y축 라인
                     break;
                 case "XZ":
-                    DrawLine(lrWidth, lrWidthCurve, leftBottom, leftBottom + new Vector3(size.x, 0, 0), "x"); // X축 라인
-                    DrawLine(lrHeight, lrHeightCurve, leftBottom, leftBottom - new Vector3(0, 0, size.z), "z"); // Z축 라인
+                    DrawLine(point_0, point_1, lrWidth, lrWidthCurve, leftBottom, leftBottom + new Vector3(size.x, 0, 0), "x"); // X축 라인
+                    DrawLine(point_2, point_3, lrHeight, lrHeightCurve, leftBottom, leftBottom - new Vector3(0, 0, size.z), "z"); // Z축 라인
                     break;
                 case "YZ":
-                    DrawLine(lrWidth, lrWidthCurve, leftBottom, leftBottom + new Vector3(0, size.y, 0), "y"); // Y축 라인
-                    DrawLine(lrHeight, lrHeightCurve, leftBottom, leftBottom - new Vector3(0, 0, size.z), "z"); // Z축 라인
+                    DrawLine(point_0, point_1, lrWidth, lrWidthCurve, leftBottom, leftBottom + new Vector3(0, size.y, 0), "y"); // Y축 라인
+                    DrawLine(point_2, point_3, lrHeight, lrHeightCurve, leftBottom, leftBottom - new Vector3(0, 0, size.z), "z"); // Z축 라인
                     break;
             }
 
+            //draw info mesh
+            DrawInfoMesh();
+
         }
 
-        private void DrawLine(LineRenderer lineRenderer, LineRenderer lineCurve, Vector3 start, Vector3 end, string direction = "")
+        void DrawInfoMesh()
+        {
+            var pointA = point_0.position;
+            var pointB = point_1.position;
+            var pointC = point_3.position;
+            var pointD = pointA - pointB + pointC;
+            point_4.position = pointD;
+        }
+
+        private void DrawLine(Transform pointA, Transform pointB, LineRenderer lineRenderer, LineRenderer lineCurve, Vector3 start, Vector3 end, string direction = "")
         {
             // GameObject lineObj = new GameObject("DimensionLine");
             // lineObj.transform.SetParent(parent, false);
             // LineRenderer lineRenderer = lineObj.AddComponent<LineRenderer>();
+
+            pointA.position = start;
+            pointB.position = end;
 
             lineRenderer.material = lineMaterial;
             lineRenderer.startColor = lineColor;

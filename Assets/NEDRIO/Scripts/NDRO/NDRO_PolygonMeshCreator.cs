@@ -71,7 +71,40 @@ namespace NDRO.Ruler
             return meshObject;
         }
 
-        void AdjustMeshPivot(GameObject meshObject)
+
+        public void CreatePolygonMesh(List<Vector3> points, MeshFilter meshFilter)
+        {
+            // 버텍스 설정
+            Vector3[] vertices = new Vector3[points.Count];
+            for (int i = 0; i < points.Count; i++)
+            {
+                vertices[i] = points[i];
+            }
+
+            // 메시 생성
+            Mesh mesh = new Mesh();
+            mesh.vertices = vertices;
+
+            // 트라이앵글 설정
+            List<int> triangles = new List<int>();
+            for (int i = 1; i < points.Count - 1; i++)
+            {
+                triangles.Add(0);
+                triangles.Add(i);
+                triangles.Add(i + 1);
+            }
+            mesh.triangles = triangles.ToArray();
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+
+            // 메시 필터에 메시 할당
+            meshFilter.mesh = mesh;
+        }
+
+
+
+
+        public void AdjustMeshPivot(GameObject meshObject)
         {
             Mesh mesh = meshObject.GetComponent<MeshFilter>().mesh;
             Vector3 center = mesh.bounds.center;
