@@ -4,6 +4,7 @@ using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 using TMPro;
 using UnityEngine.UI;
+using System.Linq;
 
 namespace NDRO.Ruler
 {
@@ -24,6 +25,7 @@ namespace NDRO.Ruler
 
         [Header("Transforms")]
         public Transform trPivitObj;
+
         public Transform trPivotCenter;
         public Transform trRulerPool;
         public Transform trRulerPointUIPool;
@@ -287,9 +289,7 @@ namespace NDRO.Ruler
 
                     curRulerPoint = null;
 
-                    // json model 저장 
-                    rulerPointPoolList[0].pointA.tag = "Untagged";
-                    arDataManager.SaveTapeRulerData(rulerPointPoolList, "test_customer", "test_customer_code");
+
 
                     // mesh 생성
                     polygonMeshCreator.InitMeshCreater(rulerPointPoolList, out GameObject meshObject);
@@ -299,7 +299,22 @@ namespace NDRO.Ruler
                     var info = NDRO_PolygonPlaneCalculator.CalculateDimensions(vectors);
                     ResultInfo resultInfo = new ResultInfo(info.width, info.height, info.plane);
 
+                    // json model 저장 
+                    rulerPointPoolList[0].pointA.tag = "Untagged";
+                    arDataManager.SaveTapeRulerData(rulerPointPoolList, "test_customer", "test_customer_code");
+
                     Debug.Log($"width: {info.width}, height: {info.height}, plane: {info.plane}");
+
+                    // xz : y = 0
+                    var pointsA = rulerPointPoolList.Select(s => s.pointA.position).ToList();
+                    var pointsB = rulerPointPoolList.Select(s => s.pointB.position).ToList();
+                    var points = pointsA.Concat(pointsB).ToList();
+                    Debug.Log($"points count: {points.Count}");
+                    for (int i = 0; i < points.Count; i++)
+                    {
+                        points[i] = new Vector3(points[i].x, 0, points[i].z);
+                    }
+
 
                     // info 
                     NDRO_MeshDimensionDrawer drawer = Instantiate(meshDimensionDrawerPrefab, meshObject.transform); // meshObject.AddComponent<NDRO_MeshDimensionDrawer>();
